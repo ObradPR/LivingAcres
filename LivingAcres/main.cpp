@@ -1,9 +1,5 @@
-//#include <SFML/Graphics.hpp>
-//#include <SFML/OpenGL.hpp>
-
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
-//#include <cmath>
 
 int main()
 {
@@ -14,15 +10,22 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	// Camera position
-	float camX = 0.0f, camY = 0.0f, camZ = 4.0f; // start above and back a bit
-	float camAngleYaw = 0.0f; // Y rotation
-	// rotation (left/right), measured in radians
+	float camX = 0.0f;
+	float camY = 3.0f;
+	float camZ = 5.0f;
+
+	// Camer rotation
+	float camYaw = 0.0f;			// left / right
+	const float camPitch = 45.0f;	// lookign down (fixed)
+
+	// yaw - rotation (left/right), measured in radians
 		// 0 radiants -> facing forward
 		// Increasing -> turning right
 		// Decreasing -> turning left
+	// pitch - nodding your head up / down
 
-	float camAnglePitch = 20.0f;
-	// nodding your head up / down
+	// Camera speed
+	const float camSpeed = 0.05f;
 
 	bool running = true;
 	while (running)
@@ -42,23 +45,33 @@ int main()
 		}
 
 		// Keyboard camera control
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))	// Up
 		{
-			camAngleYaw -= 0.02f;
+			camX += std::sin(camYaw) * camSpeed;
+			camZ -= std::cos(camYaw) * camSpeed;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))	// Down
 		{
-			camAngleYaw += 0.02f;
+			camX -= std::sin(camYaw) * camSpeed;
+			camZ += std::cos(camYaw) * camSpeed;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))	// Left
 		{
-			camX += sin(camAngleYaw) * 0.05f;
-			camY -= cos(camAngleYaw) * 0.05f;
+			camX -= std::sin(camYaw) * camSpeed;
+			camZ -= std::cos(camYaw) * camSpeed;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))	// Right
 		{
-			camX -= sin(camAngleYaw) * 0.05f;
-			camY += cos(camAngleYaw) * 0.05f;
+			camX += std::sin(camYaw) * camSpeed;
+			camZ += std::cos(camYaw) * camSpeed;
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Q))	// Rotate left
+		{
+			camYaw += 0.02f;
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::E))	// Rotate Right
+		{
+			camYaw -= 0.02f;
 		}
 
 		// Clear screen and depth buffer
@@ -66,62 +79,69 @@ int main()
 
 		// Set viewport to window size
 		glViewport(0, 0, 800, 600);
+
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
+
 		glOrtho(-5, 5, -3.5, 3.5, -100, 100); // wider view
+
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
 		// Set camera
-		glRotatef(camAnglePitch, 4, 0, 0); // 20 degree tilt
-		glRotatef(camAngleYaw * 57.2958f, 0, 1, 0);	// rotate around Y
+		glRotatef(camPitch, 1, 0, 0);			// tilt camera DOWN
+		glRotatef(camYaw * 57.2958f, 0, 1, 0);	// rotate around Y
 		// degrees = radians * (180 / PI) ~ 57.2958
 		glTranslatef(-camX, -camY, -camZ);
+
+		// Draw a floor
+		glBegin(GL_QUADS);
+
+		glColor3f(0.6f, 0.6f, 0.6f);
+		glVertex3f(-10.f, 0.f, -10.f);
+		glVertex3f(10.f, 0.f, -10.f);
+		glVertex3f(10.f, 0.f, 10.f);
+		glVertex3f(-10.f, 0.f, 10.f);
+
+		glEnd();
 
 		// Draw a colored cube at origin
 		glBegin(GL_QUADS);
 
 		// Front face (red)
 		glColor3f(1, 0, 0);
-		glVertex3f(-0.5f, -0.5f, 0.5f);
-		glVertex3f(0.5f, -0.5f, 0.5f);
-		glVertex3f(0.5f, 0.5f, 0.5f);
-		glVertex3f(-0.5f, 0.5f, 0.5f);
+		glVertex3f(-0.5f, 0.f, 0.5f);		// left bottom
+		glVertex3f(-0.5f, 1.f, 0.5f);		// left top
+		glVertex3f(0.5f, 1.f, 0.5f);		// right top
+		glVertex3f(0.5f, 0.f, 0.5f);		// right bottom
 
 		// Back face (green)
 		glColor3f(0, 1, 0);
-		glVertex3f(-0.5f, -0.5f, -0.5f);
-		glVertex3f(-0.5f, 0.5f, -0.5f);
-		glVertex3f(0.5f, 0.5f, -0.5f);
-		glVertex3f(0.5f, -0.5f, -0.5f);
+		glVertex3f(-0.5f, 0.f, -0.5f);		// left bottom
+		glVertex3f(-0.5f, 1.f, -0.5f);		// left top
+		glVertex3f(0.5f, 1.f, -0.5f);		// right top
+		glVertex3f(0.5f, 0.f, -0.5f);		// right bottom
 
 		// Left face (blue)
 		glColor3f(0, 0, 1);
-		glVertex3f(-0.5f, -0.5f, -0.5f);
-		glVertex3f(-0.5f, -0.5f, 0.5f);
-		glVertex3f(-0.5f, 0.5f, 0.5f);
-		glVertex3f(-0.5f, 0.5f, -0.5f);
+		glVertex3f(-0.5f, 0.f, -0.5f);		// bottom far
+		glVertex3f(-0.5f, 0.f, 0.5f);		// bottom near
+		glVertex3f(-0.5f, 1.f, 0.5f);		// top near
+		glVertex3f(-0.5f, 1.f, -0.5f);		// top far
 
 		// Right face (yellow)
 		glColor3f(1, 1, 0);
-		glVertex3f(0.5f, -0.5f, -0.5f);
-		glVertex3f(0.5f, 0.5f, -0.5f);
-		glVertex3f(0.5f, 0.5f, 0.5f);
-		glVertex3f(0.5f, -0.5f, 0.5f);
+		glVertex3f(0.5f, 0.f, -0.5f);		// bottom far
+		glVertex3f(0.5f, 1.f, -0.5f);		// top far
+		glVertex3f(0.5f, 1.f, 0.5f);		// top near
+		glVertex3f(0.5f, 0.f, 0.5f);		// bottom near
 
 		// Top face (cyan)
 		glColor3f(0, 1, 1);
-		glVertex3f(-0.5f, 0.5f, -0.5f);
-		glVertex3f(-0.5f, 0.5f, 0.5f);
-		glVertex3f(0.5f, 0.5f, 0.5f);
-		glVertex3f(0.5f, 0.5f, -0.5f);
-
-		// Bottom face (magenta)
-		glColor3f(1, 0, 1);
-		glVertex3f(-0.5f, -0.5f, -0.5f);
-		glVertex3f(0.5f, -0.5f, -0.5f);
-		glVertex3f(0.5f, -0.5f, 0.5f);
-		glVertex3f(-0.5f, -0.5f, 0.5f);
+		glVertex3f(-0.5f, 1.f, -0.5f);		// left far
+		glVertex3f(-0.5f, 1.f, 0.5f);		// left near
+		glVertex3f(0.5f, 1.f, 0.5f);		// right near
+		glVertex3f(0.5f, 1.f, -0.5f);		// right far
 
 		glEnd();
 
