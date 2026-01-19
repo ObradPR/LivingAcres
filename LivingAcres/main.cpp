@@ -25,9 +25,11 @@ int main()
 	// pitch - nodding your head up / down
 
 	// Camera speed
-	const float camSpeed = 0.05f;
+	const float camSpeed = 0.2f;
 
 	// Camera zoom
+	float orthoZoom = 5.0f;
+	const float zoomSpeed = 1.0f;
 	const float minZoom = 1.0f;
 	const float maxZoom = 20.0f;
 
@@ -51,16 +53,8 @@ int main()
 			{
 				if (wheel->wheel == sf::Mouse::Wheel::Vertical)
 				{
-					float delta = wheel->delta;
-					// delta > 0 -> scroll up (zoom in)
-					// delta < 0 -> scroll down (zoom out)
-
-					camY -= delta * camSpeed;	// move camera closer/farther vertically
-					camZ -= delta * camSpeed;	// move camera closer/farther in depth
-
-					// Clamp zoom
-					camY = std::clamp(camY, minZoom, maxZoom);
-					camZ = std::clamp(camZ, minZoom, maxZoom);
+					orthoZoom -= wheel->delta * zoomSpeed;
+					orthoZoom = std::clamp(orthoZoom, minZoom, maxZoom);
 				}
 			}
 		}
@@ -100,7 +94,16 @@ int main()
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 
-		glOrtho(-5, 5, -3.5, 3.5, -100, 100); // wider view
+		float aspect = 800.0f / 600.0f;
+		glOrtho(
+			-orthoZoom * aspect,
+			orthoZoom * aspect,
+			-orthoZoom,
+			orthoZoom,
+			-100,
+			100
+		);
+		//glOrtho(-5, 5, -3.5, 3.5, -100, 100); // wider view
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
