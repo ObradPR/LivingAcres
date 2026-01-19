@@ -27,6 +27,10 @@ int main()
 	// Camera speed
 	const float camSpeed = 0.05f;
 
+	// Camera zoom
+	const float minZoom = 1.0f;
+	const float maxZoom = 20.0f;
+
 	bool running = true;
 	while (running)
 	{
@@ -42,28 +46,41 @@ int main()
 					running = false;
 				}
 			}
+
+			if (const auto* wheel = event->getIf<sf::Event::MouseWheelScrolled>())
+			{
+				if (wheel->wheel == sf::Mouse::Wheel::Vertical)
+				{
+					float delta = wheel->delta;
+					// delta > 0 -> scroll up (zoom in)
+					// delta < 0 -> scroll down (zoom out)
+
+					camY -= delta * camSpeed;	// move camera closer/farther vertically
+					camZ -= delta * camSpeed;	// move camera closer/farther in depth
+
+					// Clamp zoom
+					camY = std::clamp(camY, minZoom, maxZoom);
+					camZ = std::clamp(camZ, minZoom, maxZoom);
+				}
+			}
 		}
 
 		// Keyboard camera control
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))	// Up
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))	// Forward
 		{
-			camX += std::sin(camYaw) * camSpeed;
-			camZ -= std::cos(camYaw) * camSpeed;
+			camZ -= camSpeed;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))	// Down
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))	// Backward
 		{
-			camX -= std::sin(camYaw) * camSpeed;
-			camZ += std::cos(camYaw) * camSpeed;
+			camZ += camSpeed;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))	// Left
 		{
-			camX -= std::sin(camYaw) * camSpeed;
-			camZ -= std::cos(camYaw) * camSpeed;
+			camX -= camSpeed;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))	// Right
 		{
-			camX += std::sin(camYaw) * camSpeed;
-			camZ += std::cos(camYaw) * camSpeed;
+			camX += camSpeed;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Q))	// Rotate left
 		{
