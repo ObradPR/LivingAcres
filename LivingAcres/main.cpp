@@ -1,5 +1,6 @@
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
+#include <iostream>
 
 int main()
 {
@@ -49,10 +50,12 @@ int main()
 				}
 			}
 
+			// Zoom in/out
 			if (const auto* wheel = event->getIf<sf::Event::MouseWheelScrolled>())
 			{
 				if (wheel->wheel == sf::Mouse::Wheel::Vertical)
 				{
+					std::cout << wheel->delta << std::endl;
 					orthoZoom -= wheel->delta * zoomSpeed;
 					orthoZoom = std::clamp(orthoZoom, minZoom, maxZoom);
 				}
@@ -60,22 +63,28 @@ int main()
 		}
 
 		// Keyboard camera control
+		// Movement
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))	// Forward
 		{
-			camZ -= camSpeed;
+			camX += std::sin(camYaw) * camSpeed;
+			camZ -= std::cos(camYaw) * camSpeed;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))	// Backward
 		{
-			camZ += camSpeed;
+			camX -= std::sin(camYaw) * camSpeed;
+			camZ += std::cos(camYaw) * camSpeed;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))	// Left
 		{
-			camX -= camSpeed;
+			camX -= std::cos(camYaw) * camSpeed;
+			camZ -= std::sin(camYaw) * camSpeed;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))	// Right
 		{
-			camX += camSpeed;
+			camX += std::cos(camYaw) * camSpeed;
+			camZ += std::sin(camYaw) * camSpeed;
 		}
+		// Rotation
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Q))	// Rotate left
 		{
 			camYaw += 0.02f;
@@ -103,7 +112,6 @@ int main()
 			-100,
 			100
 		);
-		//glOrtho(-5, 5, -3.5, 3.5, -100, 100); // wider view
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
